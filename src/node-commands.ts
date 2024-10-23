@@ -57,8 +57,8 @@ type VersionStats = {
   runningCliCommitHash?: string | undefined;
   minimumCliVersion: string;
   latestCliVersion: string;
-  minShardeumVersion: string;
-  activeShardeumVersion: string;
+  minLiberdusVersion: string;
+  activeLiberdusVersion: string;
   minimumGuiVersion?: string;
   latestGuiVersion?: string;
   runningGuiVersion?: string | undefined;
@@ -836,8 +836,8 @@ export function registerNodeCommands(program: Command) {
         runningCliCommitHash: await getCommitHashForCLI(),
         minimumCliVersion: '0.1.0', //TODO query from some official online source
         latestCliVersion: await getLatestCliVersion(),
-        minShardeumVersion: validatorVersions.minVersion,
-        activeShardeumVersion: validatorVersions.activeVersion,
+        minLiberdusVersion: validatorVersions.minVersion,
+        activeLiberdusVersion: validatorVersions.activeVersion,
       };
 
       if (isGuiInstalled()) {

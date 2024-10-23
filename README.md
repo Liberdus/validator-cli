@@ -1,8 +1,8 @@
-# Shardeum Validator CLI
+# Liberdus Validator CLI
 
 ## Overview
 
-The Shardeum Validator CLI is a command-line interface tool designed for managing nodes on the Shardeum network. It provides essential functionality for node management and collects debug data from running the network, making it an imporant part of the Shardeum network toolkit.
+The Liberdus Validator CLI is a command-line interface tool designed for managing nodes on the Liberdus network. It provides essential functionality for node management and collects debug data from running the network, making it an imporant part of the Liberdus network toolkit.
 
 ## Prerequisites
 
@@ -23,7 +23,7 @@ cd validator-cli
 
 ### 2. Set Up Symlink (Local Network Only)
 
-When running a local network, the Validator CLI requires a symlink to the locally running Shardeum repository. 
+When running a local network, the Validator CLI requires a symlink to the locally running Liberdus repository. 
 Create the symlink by running this command in the cli directory:
 
 ```bash
@@ -31,7 +31,7 @@ ln -s /path/to/shardeum/repo ../validator
 ls ../validator  # Verify the symlink
 ```
 
-Replace `/path/to/shardeum/repo` with the actual path to your local Shardeum repository.
+Replace `/path/to/shardeum/repo` with the actual path to your local Liberdus repository.
 
 ### 3. Install Dependencies
 
@@ -138,13 +138,13 @@ For a comprehensive list of available commands:
 If you encounter issues:
 
 1. Ensure all prerequisites are correctly installed.
-2. Verify the symlink to the Shardeum repository is correct.
+2. Verify the symlink to the Liberdus repository is correct.
 3. Check for any error messages in the CLI output.
-4. Consult the Shardeum community resources for support.
+4. Consult the Liberdus community resources for support.
 
 ## Contributing
 
-We welcome contributions to the Shardeum Validator CLI! Please adhere to our [code of conduct](./CODE_OF_CONDUCT.md) when participating in our community. To contribute:
+We welcome contributions to the Liberdus Validator CLI! Please adhere to our [code of conduct](./CODE_OF_CONDUCT.md) when participating in our community. To contribute:
 
 1. Fork the repository
 2. Create a feature branch
@@ -155,10 +155,10 @@ We welcome contributions to the Shardeum Validator CLI! Please adhere to our [co
 ## Community and Support
 
 - For discussions and searchable conversations:
-  [Shardeum GitHub Discussions](https://github.com/shardeum/shardeum/discussions)
+  [Liberdus GitHub Discussions](https://github.com/shardeum/shardeum/discussions)
 
 - For real-time chat and community interaction:
-  [Shardeum Discord Server](https://discord.com/invite/shardeum)
+  [Liberdus Discord Server](https://discord.com/invite/shardeum)
 
 ## License
 
