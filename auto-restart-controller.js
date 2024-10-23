@@ -30,7 +30,7 @@ fs.watch(configFilePath, (eventType, filename) => {
 });
 
 const startApp = () => {
-  const app = fork(path.join(__dirname, '../validator/dist/src/index.js'), {
+  const app = fork(path.join(__dirname, '../validator/dist/index.js'), {
     cwd: path.join(__dirname, './build'),
   });
 
