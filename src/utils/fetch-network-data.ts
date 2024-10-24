@@ -10,7 +10,7 @@ import {File} from '../utils';
 
 export const cache = new tcache();
 export const networkAccount =
-  '1000000000000000000000000000000000000000000000000000000000000001';
+  '0000000000000000000000000000000000000000000000000000000000000000';
 let savedActiveNode:
   | {
       id: string;

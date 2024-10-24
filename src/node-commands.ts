@@ -300,18 +300,25 @@ export function registerNodeCommands(program: Command) {
           publicKey = secrets.publicKey;
         }
 
+        const stakeRequired = '0'
+        const accountInfo = {
+          nominator: '',
+          accumulatedRewards: ethers.BigNumber.from(0),
+          lockedStake: ethers.BigNumber.from(0),
+          totalPenalty: ethers.BigNumber.from(0),
+        }
         const [
-          {stakeRequired},
+          // {stakeRequired},
           performance,
           {totalTimeValidating, lastRotationIndex, lastActive},
           {exitMessage, exitStatus},
-          accountInfo,
+          // accountInfo,
         ] = await Promise.all([
-          fetchStakeParameters(config),
+          // fetchStakeParameters(config),
           getPerformanceStatus(),
           fetchNodeProgress().then(getProgressData),
           getExitInformation(),
-          getAccountInfoParams(config, publicKey),
+          // getAccountInfoParams(config, publicKey),
         ]);
         // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
 
@@ -581,9 +588,9 @@ export function registerNodeCommands(program: Command) {
 
   program
     .command('stake')
-    .argument('<value>', 'The amount of SHM to stake')
+    .argument('<value>', 'The amount of LBD to stake')
     .description(
-      'Stake the set amount of SHM at the stake address. Rewards will be sent to set reward address.'
+      'Stake the set amount of LBD at the stake address. Rewards will be sent to set reward address.'
     )
     .action(async stakeValue => {
       //TODO should we handle consecutive stakes?
@@ -631,7 +638,7 @@ export function registerNodeCommands(program: Command) {
       ) {
         if (eoaData == null) {
           /*prettier-ignore*/
-          console.error(`Stake amount must be greater than ${ethers.utils.formatEther(stakeRequired)} SHM`);
+          console.error(`Stake amount must be greater than ${ethers.utils.formatEther(stakeRequired)} LBD`);
           return;
         }
       }
@@ -750,7 +757,7 @@ export function registerNodeCommands(program: Command) {
 
   program
     .command('unstake')
-    .description('Remove staked SHM')
+    .description('Remove staked LBD')
     .option(
       '-f, --force',
       'Force unstake in case the node is stuck, will forfeit rewards'
