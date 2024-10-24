@@ -336,7 +336,7 @@ export async function fetchValidatorVersions(config: networkConfigType) {
     };
   }>(config, '/nodeinfo', data => data == null);
 
-  return validatorVersions?.nodeInfo.appData;
+  return validatorVersions?.nodeInfo?.appData ||  {minVersion: '', activeVersion: ''};
 }
 
 export async function getAccountInfoParams(
