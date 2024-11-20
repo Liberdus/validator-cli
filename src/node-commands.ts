@@ -470,7 +470,7 @@ export function registerNodeCommands(program: Command) {
         `node`,
         [`${path.join(__dirname, VALIDATOR_CLEAN_PATH)}`],
         () => {
-          // Exec PM2 to start the shardeum validator
+          // Exec PM2 to start the liberdus validator
           pm2.connect(err => {
             if (err) {
               console.error(err);
@@ -532,7 +532,7 @@ export function registerNodeCommands(program: Command) {
         });
       }
 
-      // Exec PM2 to stop the shardeum validator
+      // Exec PM2 to stop the liberdus validator
       pm2.connect(err => {
         if (err) {
           console.error(err);

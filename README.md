@@ -17,21 +17,21 @@ Before diving into the Validator CLI, ensure you have the following:
 ### 1. Clone the Repository
 
 ```bash
-git clone git@github.com:shardeum/validator-cli.git
+git clone git@github.com:liberdus/validator-cli.git
 cd validator-cli
 ```
 
 ### 2. Set Up Symlink (Local Network Only)
 
-When running a local network, the Validator CLI requires a symlink to the locally running Liberdus repository. 
+When running a local network, the Validator CLI requires a symlink to the locally running Liberdus repository.
 Create the symlink by running this command in the cli directory:
 
 ```bash
-ln -s /path/to/shardeum/repo ../validator
+ln -s /path/to/liberdus/repo ../validator
 ls ../validator  # Verify the symlink
 ```
 
-Replace `/path/to/shardeum/repo` with the actual path to your local Liberdus repository.
+Replace `/path/to/liberdus/repo` with the actual path to your local Liberdus repository.
 
 ### 3. Install Dependencies
 
@@ -155,10 +155,10 @@ We welcome contributions to the Liberdus Validator CLI! Please adhere to our [co
 ## Community and Support
 
 - For discussions and searchable conversations:
-  [Liberdus GitHub Discussions](https://github.com/shardeum/shardeum/discussions)
+  [Liberdus GitHub Discussions](https://github.com/liberdus/liberdus/discussions)
 
 - For real-time chat and community interaction:
-  [Liberdus Discord Server](https://discord.com/invite/shardeum)
+  [Liberdus Discord Server](https://discord.com/invite/liberdus)
 
 ## License
 

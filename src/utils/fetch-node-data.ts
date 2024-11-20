@@ -21,7 +21,7 @@ export async function getExitInformation() {
 
   const interceptExitMessage = (message: string) => {
     if (message.includes('Fatal: submitJoin: our node')) {
-      return 'Unable to access external or internal ports. Please provide proper port access to the external and internal ports of shardeum  (9001 / 10001 are the defaults)';
+      return 'Unable to access external or internal ports. Please provide proper port access to the external and internal ports of Liberdus  (9001 / 10001 are the defaults)';
     }
     return message;
   };
