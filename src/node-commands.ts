@@ -300,25 +300,18 @@ export function registerNodeCommands(program: Command) {
           publicKey = secrets.publicKey;
         }
 
-        const stakeRequired = '0'
-        const accountInfo = {
-          nominator: '',
-          accumulatedRewards: ethers.BigNumber.from(0),
-          lockedStake: ethers.BigNumber.from(0),
-          totalPenalty: ethers.BigNumber.from(0),
-        }
         const [
-          // {stakeRequired},
+          {stakeRequired},
           performance,
           {totalTimeValidating, lastRotationIndex, lastActive},
           {exitMessage, exitStatus},
-          // accountInfo,
+          accountInfo,
         ] = await Promise.all([
-          // fetchStakeParameters(config),
+          fetchStakeParameters(config),
           getPerformanceStatus(),
           fetchNodeProgress().then(getProgressData),
           getExitInformation(),
-          // getAccountInfoParams(config, publicKey),
+          getAccountInfoParams(config, publicKey),
         ]);
         // TODO: Use Promise.allSettled. Need to update nodeJs to 12.9
 

@@ -143,11 +143,11 @@ export async function getNewActiveNode(
 
 type InitialParameters = {
   account: {
-    data: {
-      current: {
-        nodeRewardAmountUsd: string;
-        nodeRewardInterval: string;
+    current: {
+      nodeRewardAmountUsd: {
+        value: string;
       };
+      nodeRewardInterval: number;
     };
   };
 };
@@ -162,7 +162,7 @@ export async function fetchInitialParameters(
     if (parsedValue.nodeRewardAmount && parsedValue.nodeRewardInterval) {
       return {
         nodeRewardAmount: new BN(
-          stripHexPrefix(parsedValue.nodeRewardAmount),
+          stripHexPrefix(parsedValue.nodeRewardAmount.value),
           16
         ),
         nodeRewardInterval: new BN(
@@ -175,16 +175,16 @@ export async function fetchInitialParameters(
 
   const initialParams: InitialParameters | null = await fetchDataFromNetwork(
     config,
-    `/account/${networkAccount}?type=5`,
+    `/account/${networkAccount}`,
     data => data?.account == null
   );
 
-  const response = initialParams?.account?.data?.current;
+  const response = initialParams?.account?.current;
   if (!response) {
     throw new Error("Fetched initial parameters, but account data isn't found");
   }
   const nodeRewardAmount = new BN(
-    stripHexPrefix(response.nodeRewardAmountUsd),
+    stripHexPrefix(response.nodeRewardAmountUsd.value),
     16
   );
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
@@ -203,13 +203,19 @@ export async function fetchInitialParameters(
 }
 
 type NodeData = {
-  stakeLock: string;
-  reward: string;
+  stakeLock: {
+    value: string;
+  };
+  reward: {
+    value: string;
+  };
   rewardStartTime: number;
   rewardEndTime: number;
   nominator: string;
   nodeAccountStats: {
-    totalPenalty: string;
+    totalPenalty: {
+      value: string;
+    };
   };
 };
 
@@ -219,7 +225,7 @@ async function fetchNodeParameters(
 ): Promise<NodeData | null> {
   const nodeParams = await fetchDataFromNetwork<{
     account: {data: NodeData} | NodeData;
-  }>(config, `/account/${nodePubKey}?type=9`, data => data?.account == null);
+  }>(config, `/account/${nodePubKey}`, data => data?.account == null);
 
   if (nodeParams?.account) {
     if ('data' in nodeParams.account) {
@@ -371,11 +377,11 @@ export async function getAccountInfoParams(
 
     params.lockedStake = nodeData.stakeLock
       ? new BN(
-          stripHexPrefix(nodeData.stakeLock),
+          stripHexPrefix(nodeData.stakeLock.value),
           16
         ).toString()
     : ''
-    previousRewards = new BN(stripHexPrefix(nodeData.reward), 16);
+    previousRewards = new BN(stripHexPrefix(nodeData.reward.value), 16);
     const startTime = nodeData.rewardStartTime * 1000;
     const endTime = nodeData.rewardEndTime * 1000;
 
@@ -395,7 +401,7 @@ export async function getAccountInfoParams(
     }
     params.nominator = nodeData.nominator;
     params.totalPenalty = new BN(
-      stripHexPrefix(nodeData.nodeAccountStats.totalPenalty),
+      stripHexPrefix(nodeData.nodeAccountStats.totalPenalty.value),
       16
     ).toString();
   } catch (err) {
@@ -410,6 +416,11 @@ export async function getAccountInfoParams(
 }
 
 export async function fetchStakeParameters(config: networkConfigType) {
+  const useDefaultStakeAmoount = true;
+  if (useDefaultStakeAmoount)
+    return {
+      stakeRequired: new BN('8ac7230489e80000',16).toString(), // 10 LIB
+    }
   const value = cache.get('stakeParams');
   if (value) {
     return {
