@@ -162,7 +162,7 @@ export async function fetchInitialParameters(
     if (parsedValue.nodeRewardAmount && parsedValue.nodeRewardInterval) {
       return {
         nodeRewardAmount: new BN(
-          stripHexPrefix(parsedValue.nodeRewardAmount.value),
+          stripHexPrefix(parsedValue.nodeRewardAmount),
           16
         ),
         nodeRewardInterval: new BN(
