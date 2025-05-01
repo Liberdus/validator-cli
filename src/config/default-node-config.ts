@@ -1,22 +1,27 @@
 export const defaultNodeConfig = {
   autoRestart: true,
-  lastStopped: undefined
+  currentNetwork: 'localnet',
+  lastStopped: undefined,
 };
 
 export type nodeConfigType = {
-  autoRestart: boolean,
-  lastStopped?: number
-}
+  autoRestart: boolean;
+  currentNetwork: string;
+  lastStopped?: number;
+};
 
 export const nodeConfigSchema = {
-  type: "object",
+  type: 'object',
   properties: {
     autoRestart: {
-      type: "boolean"
+      type: 'boolean',
+    },
+    currentNetwork: {
+      type: 'string',
     },
     lastStopped: {
-      type: "number"
-    }
+      type: 'number',
+    },
   },
-  required: ["autoRestart"]
-}
+  required: ['autoRestart', 'currentNetwork'],
+};

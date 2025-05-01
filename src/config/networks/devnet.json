@@ -1,0 +1,10 @@
+{
+  "existingArchivers": [
+    {
+      "ip": "69.197.162.234",
+      "port": 4000,
+      "publicKey": "758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3"
+    }
+  ],
+  "monitorUrl": "http://69.197.162.234:3000/api"
+}

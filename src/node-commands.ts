@@ -5,6 +5,7 @@ import {Command} from 'commander';
 import path from 'path';
 import {exec, execFile} from 'child_process';
 import merge from 'deepmerge';
+import readline from 'readline';
 import {
   defaultNetworkConfig,
   networkConfigType,
@@ -333,6 +334,8 @@ export function registerNodeCommands(program: Command) {
                 ? ethers.utils.formatEther(accountInfo.totalPenalty)
                 : '',
               autorestart: nodeConfig.autoRestart,
+              currentNetwork: nodeConfig.currentNetwork,
+              // availableNetworks: Object.values(currentNetwork),
             })
           );
           cache.writeMaps();
@@ -384,6 +387,8 @@ export function registerNodeCommands(program: Command) {
                 : '',
               autorestart: nodeConfig.autoRestart,
               nodeInfo: nodeInfo,
+              currentNetwork: nodeConfig.currentNetwork,
+              // availableNetworks: Object.values(currentNetwork),
               // TODO: Add fetching node info when in standby
             })
           );
@@ -414,6 +419,8 @@ export function registerNodeCommands(program: Command) {
               ? ethers.utils.formatEther(accountInfo.totalPenalty)
               : '',
             autorestart: nodeConfig.autoRestart,
+            currentNetwork: nodeConfig.currentNetwork,
+            // availableNetworks: Object.values(currentNetwork),
           })
         );
         cache.writeMaps();
@@ -887,6 +894,7 @@ export function registerNodeCommands(program: Command) {
         yaml.dump({
           autoRestart: settings.autoRestart,
           lastStopped: settings.lastStopped,
+          currentNetwork: settings.currentNetwork,
         })
       );
     });
@@ -991,6 +999,86 @@ export function registerNodeCommands(program: Command) {
       writeNodeConfig();
     });
 
+  setCommand
+    .command('network')
+    .argument('[network]', 'The name of the network to use')
+    .description('Select the network to use')
+    .action((network: string | undefined) => {
+      const networkDirectory = path.join(__dirname, '../src/config/networks');
+      const availableNetworks: string[] = [];
+
+      // Read the network directory
+      fs.readdirSync(networkDirectory).forEach(file => {
+        if (file.endsWith('.json')) {
+          availableNetworks.push(file.replace('.json', '').toLowerCase());
+        }
+      });
+
+      if (network) {
+        if (availableNetworks.includes(network.toLowerCase())) {
+          nodeConfig.currentNetwork = network.toLowerCase();
+          const chosenNetworkPath = path.join(
+            networkDirectory,
+            `${network.toLowerCase()}.json`
+          );
+          // eslint-disable-next-line security/detect-non-literal-fs-filename
+          const chosenNetworkContent = fs.readFileSync(
+            chosenNetworkPath,
+            'utf8'
+          );
+          const chosenNetwork = JSON.parse(chosenNetworkContent);
+          config.server.p2p.existingArchivers = chosenNetwork.existingArchivers;
+          config.server.reporting.recipient = chosenNetwork.monitorUrl;
+          writeNodeConfig();
+          writeNetworkConfig();
+        } else {
+          console.error(
+            `Invalid choice. Please enter one of: ${availableNetworks.join(
+              ', '
+            )}.`
+          );
+        }
+      } else {
+        const rl = readline.createInterface({
+          input: process.stdin,
+          output: process.stdout,
+        });
+
+        rl.question(
+          `Choose a network (${availableNetworks.join(', ')}): `,
+          answer => {
+            const chosenNetworkName = answer.trim().toLowerCase();
+
+            if (availableNetworks.includes(chosenNetworkName)) {
+              nodeConfig.currentNetwork = chosenNetworkName;
+              const chosenNetworkPath = path.join(
+                networkDirectory,
+                `${chosenNetworkName}.json`
+              );
+              // eslint-disable-next-line security/detect-non-literal-fs-filename
+              const chosenNetworkContent = fs.readFileSync(
+                chosenNetworkPath,
+                'utf8'
+              );
+              const chosenNetwork = JSON.parse(chosenNetworkContent);
+              config.server.p2p.existingArchivers =
+                chosenNetwork.existingArchivers;
+              config.server.reporting.recipient = chosenNetwork.monitorUrl;
+              writeNodeConfig();
+              writeNetworkConfig();
+            } else {
+              console.error(
+                `Invalid choice. Please enter one of: ${availableNetworks.join(
+                  ', '
+                )}.`
+              );
+            }
+            rl.close();
+          }
+        );
+      }
+    });
+
   function writeNodeConfig() {
     // eslint-disable-next-line security/detect-non-literal-fs-filename
     fs.writeFile(
@@ -1003,6 +1091,16 @@ export function registerNodeCommands(program: Command) {
     );
   }
 
+  function writeNetworkConfig() {
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    fs.writeFile(
+      path.join(__dirname, `../${File.CONFIG}`),
+      JSON.stringify(config, undefined, 2),
+      err => {
+        if (err) console.error(err);
+      }
+    );
+  }
 
   // setCommand
   //   .command('archiver')
