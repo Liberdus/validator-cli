@@ -77,6 +77,21 @@ let rpcServer = {
   url: process.env.RPC_SERVER_URL,
 };
 
+const networkDirectory = path.join(__dirname, '../src/config/networks');
+const availableNetworks: string[] = [];
+
+// Read the network directory
+fs.readdirSync(networkDirectory).forEach(file => {
+  if (file.endsWith('.json')) {
+    availableNetworks.push(file.replace('.json', '').toLowerCase());
+  }
+});
+
+// Check if the network directory is empty
+if (availableNetworks.length === 0) {
+  throw new Error('Network directory is empty');
+}
+
 const validateNetworkConfig = new Ajv().compile(networkConfigSchema);
 const validateNodeConfig = new Ajv().compile(nodeConfigSchema);
 const validateRpcConfig = new Ajv().compile(rpcConfigSchema);
@@ -333,9 +348,7 @@ export function registerNodeCommands(program: Command) {
               totalPenalty: accountInfo.totalPenalty
                 ? ethers.utils.formatEther(accountInfo.totalPenalty)
                 : '',
-              autorestart: nodeConfig.autoRestart,
-              currentNetwork: nodeConfig.currentNetwork,
-              // availableNetworks: Object.values(currentNetwork),
+              autorestart: nodeConfig.autoRestart
             })
           );
           cache.writeMaps();
@@ -387,8 +400,6 @@ export function registerNodeCommands(program: Command) {
                 : '',
               autorestart: nodeConfig.autoRestart,
               nodeInfo: nodeInfo,
-              currentNetwork: nodeConfig.currentNetwork,
-              // availableNetworks: Object.values(currentNetwork),
               // TODO: Add fetching node info when in standby
             })
           );
@@ -419,8 +430,6 @@ export function registerNodeCommands(program: Command) {
               ? ethers.utils.formatEther(accountInfo.totalPenalty)
               : '',
             autorestart: nodeConfig.autoRestart,
-            currentNetwork: nodeConfig.currentNetwork,
-            // availableNetworks: Object.values(currentNetwork),
           })
         );
         cache.writeMaps();
@@ -1004,16 +1013,6 @@ export function registerNodeCommands(program: Command) {
     .argument('[network]', 'The name of the network to use')
     .description('Select the network to use')
     .action((network: string | undefined) => {
-      const networkDirectory = path.join(__dirname, '../src/config/networks');
-      const availableNetworks: string[] = [];
-
-      // Read the network directory
-      fs.readdirSync(networkDirectory).forEach(file => {
-        if (file.endsWith('.json')) {
-          availableNetworks.push(file.replace('.json', '').toLowerCase());
-        }
-      });
-
       if (network) {
         if (availableNetworks.includes(network.toLowerCase())) {
           nodeConfig.currentNetwork = network.toLowerCase();
@@ -1077,6 +1076,13 @@ export function registerNodeCommands(program: Command) {
           }
         );
       }
+    });
+
+  program
+    .command('networks')
+    .description('List available networks')
+    .action(() => {
+      console.log(yaml.dump({networks: availableNetworks}));
     });
 
   function writeNodeConfig() {
