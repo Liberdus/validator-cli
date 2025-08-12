@@ -1,6 +1,6 @@
 export const defaultNodeConfig = {
   autoRestart: true,
-  currentNetwork: 'localnet',
+  currentNetwork: 'testnet',
   lastStopped: undefined,
 };
 
