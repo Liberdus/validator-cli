@@ -283,6 +283,16 @@ const dashboardPackageJson = JSON.parse(
   readFileSync(path.join(__dirname, '../../package.json'), 'utf8')
 );
 
+const chosenNetworkPath = path.join(
+  networkDirectory,
+  `${nodeConfig.currentNetwork}.json`
+);
+// eslint-disable-next-line security/detect-non-literal-fs-filename
+const chosenNetworkContent = fs.readFileSync(chosenNetworkPath, 'utf8');
+const chosenNetwork = JSON.parse(chosenNetworkContent);
+config.server.p2p.existingArchivers = chosenNetwork.existingArchivers;
+config.server.reporting.recipient = chosenNetwork.monitorUrl;
+
 // eslint-disable-next-line security/detect-non-literal-fs-filename
 fs.writeFileSync(
   path.join(__dirname, `../${File.CONFIG}`),
@@ -348,7 +358,8 @@ export function registerNodeCommands(program: Command) {
               totalPenalty: accountInfo.totalPenalty
                 ? ethers.utils.formatEther(accountInfo.totalPenalty)
                 : '',
-              autorestart: nodeConfig.autoRestart
+              autorestart: nodeConfig.autoRestart,
+              ...(publicKey && {nomineeAddress: publicKey}),
             })
           );
           cache.writeMaps();
@@ -421,6 +432,7 @@ export function registerNodeCommands(program: Command) {
               ? ethers.utils.formatEther(accountInfo.lockedStake)
               : '',
             nominatorAddress: accountInfo.nominator,
+            nomineeAddress: publicKey,
             currentRewards: accountInfo
               ? ethers.utils.formatEther(
                   accountInfo.accumulatedRewards.toString()
@@ -1014,22 +1026,9 @@ export function registerNodeCommands(program: Command) {
     .description('Select the network to use')
     .action((network: string | undefined) => {
       if (network) {
-        if (availableNetworks.includes(network.toLowerCase())) {
-          nodeConfig.currentNetwork = network.toLowerCase();
-          const chosenNetworkPath = path.join(
-            networkDirectory,
-            `${network.toLowerCase()}.json`
-          );
-          // eslint-disable-next-line security/detect-non-literal-fs-filename
-          const chosenNetworkContent = fs.readFileSync(
-            chosenNetworkPath,
-            'utf8'
-          );
-          const chosenNetwork = JSON.parse(chosenNetworkContent);
-          config.server.p2p.existingArchivers = chosenNetwork.existingArchivers;
-          config.server.reporting.recipient = chosenNetwork.monitorUrl;
-          writeNodeConfig();
-          writeNetworkConfig();
+        const providedNetwork = network.toLowerCase();
+        if (availableNetworks.includes(providedNetwork)) {
+          updateNetwork(providedNetwork);
         } else {
           console.error(
             `Invalid choice. Please enter one of: ${availableNetworks.join(
@@ -1049,22 +1048,7 @@ export function registerNodeCommands(program: Command) {
             const chosenNetworkName = answer.trim().toLowerCase();
 
             if (availableNetworks.includes(chosenNetworkName)) {
-              nodeConfig.currentNetwork = chosenNetworkName;
-              const chosenNetworkPath = path.join(
-                networkDirectory,
-                `${chosenNetworkName}.json`
-              );
-              // eslint-disable-next-line security/detect-non-literal-fs-filename
-              const chosenNetworkContent = fs.readFileSync(
-                chosenNetworkPath,
-                'utf8'
-              );
-              const chosenNetwork = JSON.parse(chosenNetworkContent);
-              config.server.p2p.existingArchivers =
-                chosenNetwork.existingArchivers;
-              config.server.reporting.recipient = chosenNetwork.monitorUrl;
-              writeNodeConfig();
-              writeNetworkConfig();
+              updateNetwork(chosenNetworkName);
             } else {
               console.error(
                 `Invalid choice. Please enter one of: ${availableNetworks.join(
@@ -1106,6 +1090,18 @@ export function registerNodeCommands(program: Command) {
         if (err) console.error(err);
       }
     );
+  }
+
+  function updateNetwork(network: string) {
+    nodeConfig.currentNetwork = network;
+    const chosenNetworkPath = path.join(networkDirectory, `${network}.json`);
+    // eslint-disable-next-line security/detect-non-literal-fs-filename
+    const chosenNetworkContent = fs.readFileSync(chosenNetworkPath, 'utf8');
+    const chosenNetwork = JSON.parse(chosenNetworkContent);
+    config.server.p2p.existingArchivers = chosenNetwork.existingArchivers;
+    config.server.reporting.recipient = chosenNetwork.monitorUrl;
+    writeNodeConfig();
+    writeNetworkConfig();
   }
 
   // setCommand
