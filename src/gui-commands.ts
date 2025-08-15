@@ -203,7 +203,7 @@ export function registerGuiCommands(program: Command) {
         pm2.start(
           {
             name: 'operator-gui',
-            cwd: `${path.join(__dirname, '../../../validator-gui')}`,
+            cwd: `${path.join(__dirname, '../../../gui')}`,
             script: 'npm',
             args: 'start',
             env: {PORT: `${config.gui.port}`},
