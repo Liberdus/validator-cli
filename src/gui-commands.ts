@@ -9,7 +9,7 @@ import fs from 'fs';
 import * as yaml from 'js-yaml';
 import * as cryptoShardus from '@shardus/crypto-utils';
 import {getInstalledGuiVersion} from './utils/project-data';
-import {File} from './utils'
+import {File, getHiddenInput} from './utils'
 import crypto from 'crypto';
 import Ajv from "ajv"
 
@@ -132,12 +132,29 @@ export function registerGuiCommands(program: Command) {
     });
 
   setCommand
-    .command('password')
-    .arguments('<password>')
+    .command('password [password]')
     .description('Set the GUI server password, requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$')
     .option('-h', 'Changes how the password is hashed. For internal use only')
-    .action((password, options) => {
-      if (!options.h) {
+    .action(async (passwordArg, options) => {
+      let password: string;
+      
+      if (options.h) {
+        // For internal use, password must be provided as argument
+        if (!passwordArg) {
+          console.error('Internal use flag requires password as argument. Use: operator-cli gui set password <password> -h');
+          return;
+        }
+        password = passwordArg;
+      } else {
+        if (passwordArg) {
+          // If password provided as argument in normal mode, warn user about security
+          console.warn('Warning: Providing password as command argument is not secure. Use interactive mode instead.');
+          password = passwordArg;
+        } else {
+          // Interactive password input with hidden display
+          password = await getHiddenInput('Enter new password: ');
+        }
+        
         if (!validPassword(password)) {
           console.error(
             'Invalid password: requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$'
@@ -147,6 +164,7 @@ export function registerGuiCommands(program: Command) {
 
         password = crypto.createHash('sha256').update(password).digest('hex');
       }
+      
       config.gui.pass = cryptoShardus.hash(password);
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
@@ -154,6 +172,7 @@ export function registerGuiCommands(program: Command) {
         JSON.stringify(config, undefined, 2),
         err => {
           if (err) console.error(err);
+          else console.log('Password updated successfully.');
         }
       );
     });
@@ -164,7 +183,7 @@ export function registerGuiCommands(program: Command) {
     .description('verify GUI password')
     .action(password => {
       if (
-        !timingSafeEqual(Buffer.from(password), Buffer.from(config.gui.pass))
+        !timingSafeEqual(new Uint8Array(Buffer.from(password)), new Uint8Array(Buffer.from(config.gui.pass)))
       ) {
         console.log(yaml.dump({login: 'unauthorized'}));
         return;
@@ -184,7 +203,7 @@ export function registerGuiCommands(program: Command) {
         pm2.start(
           {
             name: 'operator-gui',
-            cwd: `${path.join(__dirname, '../../../gui')}`,
+            cwd: `${path.join(__dirname, '../../../validator-gui')}`,
             script: 'npm',
             args: 'start',
             env: {PORT: `${config.gui.port}`},
