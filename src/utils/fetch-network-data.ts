@@ -1,6 +1,7 @@
 import {networkConfigType} from '../config/default-network-config';
 import axios, {AxiosError} from 'axios';
 import {BN, stripHexPrefix} from 'ethereumjs-util';
+import {ethers} from 'ethers';
 import {ProcessDescription} from 'pm2';
 import {Pm2ProcessStatus, statusFromPM2} from '../pm2';
 import fs from 'fs';
@@ -144,9 +145,8 @@ export async function getNewActiveNode(
 type InitialParameters = {
   account: {
     current: {
-      nodeRewardAmountUsd: {
-        value: string;
-      };
+      nodeRewardAmountUsdStr: string;
+      stabilityFactorStr: string;
       nodeRewardInterval: number;
     };
   };
@@ -183,9 +183,9 @@ export async function fetchInitialParameters(
   if (!response) {
     throw new Error("Fetched initial parameters, but account data isn't found");
   }
-  const nodeRewardAmount = new BN(
-    stripHexPrefix(response.nodeRewardAmountUsd.value),
-    16
+  const nodeRewardAmount = usdStrToWei(
+    response.nodeRewardAmountUsdStr,
+    response.stabilityFactorStr
   );
   const nodeRewardInterval = new BN(response.nodeRewardInterval);
 
@@ -200,6 +200,14 @@ export async function fetchInitialParameters(
     cycleDuration * 1000
   );
   return {nodeRewardAmount, nodeRewardInterval};
+}
+
+export function usdStrToWei(usdStr: string, stabilityFactorStr: string): BN {
+  const stabilityFactor = ethers.utils.parseEther(stabilityFactorStr);
+  const usdAmount = ethers.utils.parseEther(usdStr);
+  const weiAmount = ethers.constants.WeiPerEther; // 10^18
+  const result = usdAmount.mul(weiAmount).div(stabilityFactor);
+  return new BN(result.toString());
 }
 
 type NodeData = {
@@ -388,7 +396,7 @@ export async function getAccountInfoParams(
     if (startTime > 0 && endTime === 0) {
       // Node is earning rewards
       nodeActiveDuration = Date.now() - startTime;
-      
+
       // Calculate rewards only if the node is active
       const totalReward = nodeRewardAmount.mul(new BN(nodeActiveDuration, 16));
       params.accumulatedRewards = previousRewards.add(
@@ -416,11 +424,6 @@ export async function getAccountInfoParams(
 }
 
 export async function fetchStakeParameters(config: networkConfigType) {
-  const useDefaultStakeAmoount = true;
-  if (useDefaultStakeAmoount)
-    return {
-      stakeRequired: new BN('8ac7230489e80000',16).toString(), // 10 LIB
-    }
   const value = cache.get('stakeParams');
   if (value) {
     return {
