@@ -1,10 +1,20 @@
 {
   "existingArchivers": [
     {
+      "ip": "198.135.51.252",
+      "port": 4000,
+      "publicKey": "6ec0d696f65cba2075088d04b3e0699ee4acc68167cf071d4b51b6c72ed72699"
+    },
+    {
+      "ip": "173.208.182.26",
+      "port": 4000,
+      "publicKey": "8654ab0c47161591ccd37056ef964905270ac384b25e99e5d64d9f2b4a62b38a"
+    },
+    {
       "ip": "63.141.233.178",
       "port": 4000,
-      "publicKey": "758b1c119412298802cd28dbfa394cdfeecc4074492d60844cc192d632d84de3"
+      "publicKey": "cf0d8986d2edb1fa46a21aa6793db50a5edb2d04bb98fd871c7bcd0657c51052"
     }
   ],
-  "monitorUrl": "http://63.141.233.178:3000/api"
+  "monitorUrl": "http://142.54.180.234:3001/api"
 }
