@@ -16,5 +16,5 @@
       "publicKey": "cf0d8986d2edb1fa46a21aa6793db50a5edb2d04bb98fd871c7bcd0657c51052"
     }
   ],
-  "monitorUrl": "http://142.54.180.234:3001/api"
+  "monitorUrl": "http://142.54.180.234:3000/api"
 }
