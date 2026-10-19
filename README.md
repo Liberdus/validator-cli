@@ -2,6 +2,9 @@
 
 ## Overview
 
+To run a validator node follow the instructions in the validator-dashboard repo. These validator-cli instructions are for developers.
+https://github.com/Liberdus/validator-dashboard
+
 The Liberdus Validator CLI is a command-line interface tool designed for managing nodes on the Liberdus network. It provides essential functionality for node management and collects debug data from running the network, making it an imporant part of the Liberdus network toolkit.
 
 ## Prerequisites
