@@ -7,7 +7,7 @@ import merge from 'deepmerge';
 import {defaultGuiConfig, guiConfigType, guiConfigSchema} from './config/default-gui-config';
 import fs from 'fs';
 import * as yaml from 'js-yaml';
-import * as cryptoShardus from '@shardus/crypto-utils';
+import * as cryptoShardus from '@shardus/lib-crypto-utils';
 import {getInstalledGuiVersion} from './utils/project-data';
 import {File, getHiddenInput} from './utils'
 import crypto from 'crypto';
