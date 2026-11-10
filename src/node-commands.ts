@@ -600,6 +600,7 @@ export function registerNodeCommands(program: Command) {
               if (answer.toLowerCase() === 'y') {
                 return stopNode();
               }
+              return pm2.disconnect();
             }
           }
           return stopNode();
