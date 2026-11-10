@@ -9,6 +9,8 @@ import path from 'path';
 import tcache from './tcache';
 import {File} from '../utils';
 
+const REQUEST_TIMEOUT_MS = 10000;
+
 export const cache = new tcache();
 export const networkAccount =
   '0000000000000000000000000000000000000000000000000000000000000000';
@@ -53,10 +55,8 @@ async function fetchDataFromNetwork<T>(
   query: string,
   callback: (response: {[id: string]: string} | null) => boolean
 ): Promise<T | null> {
-  let retries = 3;
-  if (!readActiveNode()) {
-    await getNewActiveNode(config);
-  }
+  let retries = 5;
+  await getNewActiveNode(config);
 
   if (!savedActiveNode) {
     throw new Error('Unable to fetch active node');
@@ -64,7 +64,22 @@ async function fetchDataFromNetwork<T>(
 
   let data = {data: null, status: 500};
   let finalError: AxiosError | null = null;
-  do {
+
+  try {
+    data = await axios.get(
+      `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query,
+      {timeout: REQUEST_TIMEOUT_MS}
+    );
+  } catch (e) {
+    if (e instanceof AxiosError) {
+      finalError = e;
+    }
+
+    // set data to null and status to 500 to indicate that the request failed
+    data = {data: null, status: 500};
+  }
+
+  while ((data.status === 500 || callback(data.data)) && retries--) {
     try {
       await getNewActiveNode(config);
     } catch (e) {
@@ -76,7 +91,7 @@ async function fetchDataFromNetwork<T>(
     const url = `http://${savedActiveNode.ip}:${savedActiveNode.port}` + query;
 
     try {
-      data = await axios.get(url, {timeout: 2000});
+      data = await axios.get(url, {timeout: REQUEST_TIMEOUT_MS});
     } catch (e) {
       if (e instanceof AxiosError) {
         finalError = e;
@@ -85,7 +100,7 @@ async function fetchDataFromNetwork<T>(
       // set data to null and status to 500 to indicate that the request failed
       data = {data: null, status: 500};
     }
-  } while ((data.status === 500 || callback(data.data)) && retries--);
+  }
 
   if (retries < 0) {
     // figure out why we ran out of retries before throwing our error
@@ -123,9 +138,9 @@ export async function getNewActiveNode(
     config.server.p2p.existingArchivers[
       Math.floor(Math.random() * config.server.p2p.existingArchivers.length)
     ];
-  const archiverUrl = `http://${randomArchiver.ip}:${randomArchiver.port}/nodelist`;
+  const archiverUrl = `http://${randomArchiver.ip}:${randomArchiver.port}/nodelist?activeOnly=true`;
   const nodeList = await axios
-    .get(archiverUrl, {timeout: 2000})
+    .get(archiverUrl, {timeout: REQUEST_TIMEOUT_MS})
     .then(res => res.data)
     .catch(err => console.error(err));
   if (!nodeList?.nodeList) {
@@ -279,7 +294,7 @@ async function fetchNodeTxStats(config: networkConfigType) {
 export async function fetchNodeInfo(config: networkConfigType) {
   const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo?reportIntermediateStatus=true`;
   // const url = `http://localhost:${config.server.ip.externalPort}/nodeinfo`;
-  const response = await axios.get(url, {timeout: 2000});
+  const response = await axios.get(url, {timeout: REQUEST_TIMEOUT_MS});
   return response.data.nodeInfo;
 }
 

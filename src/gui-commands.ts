@@ -12,6 +12,7 @@ import {getInstalledGuiVersion} from './utils/project-data';
 import {File, getHiddenInput} from './utils'
 import crypto from 'crypto';
 import Ajv from "ajv"
+import argon2id from 'argon2';
 
 let config = defaultGuiConfig;
 
@@ -27,6 +28,7 @@ function isNumber(n: string) {
 function validPassword(password: string) {
   return (
     password.length >= 8 &&
+    password.length <= 128 &&
     /[A-Z]/.test(password) &&
     /[a-z]/.test(password) &&
     /[0-9]/.test(password) &&
@@ -133,7 +135,7 @@ export function registerGuiCommands(program: Command) {
 
   setCommand
     .command('password [password]')
-    .description('Set the GUI server password, requirements: min 8 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$')
+    .description('Set the GUI server password, requirements: min 8 characters, max 128 characters, at least 1 lower case letter, at least 1 upper case letter, at least 1 number, at least 1 special character !@#$%^&*()_+*$')
     .option('-h', 'Changes how the password is hashed. For internal use only')
     .action(async (passwordArg, options) => {
       let password: string;
@@ -164,8 +166,8 @@ export function registerGuiCommands(program: Command) {
 
         password = crypto.createHash('sha256').update(password).digest('hex');
       }
-      
-      config.gui.pass = cryptoShardus.hash(password);
+
+      config.gui.pass = await argon2id.hash(password);
       // eslint-disable-next-line security/detect-non-literal-fs-filename
       fs.writeFile(
         path.join(__dirname, `../${File.GUI_CONFIG}`),
@@ -181,14 +183,19 @@ export function registerGuiCommands(program: Command) {
     .command('login')
     .arguments('<password>')
     .description('verify GUI password')
-    .action(password => {
-      if (
-        !timingSafeEqual(new Uint8Array(Buffer.from(password)), new Uint8Array(Buffer.from(config.gui.pass)))
-      ) {
-        console.log(yaml.dump({login: 'unauthorized'}));
-        return;
+    .action(async password => {
+      try {
+        // Verify the password with saved hash
+        const isValid = await argon2id.verify(config.gui.pass, password);
+        if (!isValid) {
+          console.log(yaml.dump({login: 'unauthorized'}));
+          return;
+        }
+        console.log(yaml.dump({login: 'authorized'}));
+      } catch (err) {
+        console.error('Error during password verification:', err);
+        console.log(yaml.dump({login: 'unauthorized'})); // Fail-safe unauthorized output
       }
-      console.log(yaml.dump({login: 'authorized'}));
     });
 
   function startGui() {
